@@ -9,15 +9,19 @@ ui <- fluidPage(
     ),
     tags$style(HTML("
       /* ---- Base ---- */
+      html {
+        font-size: 16px;
+      }
       body {
         font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 1rem;
         color: #444;
         background-color: #f0f5f9;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
       .container-fluid {
-        max-width: 1100px;
+        max-width: 1200px;
         padding: 0 2rem;
       }
 
@@ -25,17 +29,17 @@ ui <- fluidPage(
       .app-header {
         background: linear-gradient(135deg, #3a6f99, #4682B4);
         color: #ffffff;
-        padding: 1.6rem 2rem;
+        padding: 2rem 2.5rem;
         margin: -15px -15px 1.5rem -15px;
         border-radius: 0 0 8px 8px;
       }
       .app-header h2 {
         font-weight: 700;
-        font-size: 1.6rem;
-        margin: 0 0 0.3rem 0;
+        font-size: 2rem;
+        margin: 0 0 0.4rem 0;
       }
       .app-header p {
-        font-size: 1.0rem;
+        font-size: 1.15rem;
         margin: 0;
         opacity: 0.9;
       }
@@ -45,13 +49,13 @@ ui <- fluidPage(
         background: #ffffff;
         border: 1px solid #dee2e6;
         border-radius: 8px;
-        padding: 1.25rem;
+        padding: 1.5rem;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         margin-bottom: 1.25rem;
       }
       .card h4 {
         font-weight: 600;
-        font-size: 1.05rem;
+        font-size: 1.25rem;
         color: #1a6b54;
         margin-top: 0;
         margin-bottom: 0.75rem;
@@ -59,15 +63,15 @@ ui <- fluidPage(
         border-bottom: 2px solid #e8eef3;
       }
       .card p, .card li {
-        font-size: 0.95rem;
-        line-height: 1.6;
+        font-size: 1.05rem;
+        line-height: 1.65;
         color: #555;
       }
       .card ol {
-        padding-left: 1.2rem;
+        padding-left: 1.4rem;
       }
       .card ol li {
-        padding: 0.2rem 0;
+        padding: 0.25rem 0;
       }
       .card strong {
         color: #1a6b54;
@@ -79,12 +83,13 @@ ui <- fluidPage(
         border: 1px solid #dee2e6 !important;
         border-radius: 8px !important;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
-        padding: 1.25rem !important;
+        padding: 1.5rem !important;
       }
       .control-label {
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 1.0rem;
         color: #3a6f99;
+        margin-bottom: 0.25rem;
       }
       .irs--shiny .irs-bar {
         background: #4682B4;
@@ -100,7 +105,7 @@ ui <- fluidPage(
         border: 1px solid #4682B4;
       }
       .radio label {
-        font-size: 0.9rem;
+        font-size: 1.0rem;
         color: #555;
       }
 
@@ -119,13 +124,13 @@ ui <- fluidPage(
         background: #ffffff;
         border: 1px solid #dee2e6;
         border-radius: 8px;
-        padding: 1.25rem;
+        padding: 1.5rem;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         margin-bottom: 1.25rem;
       }
       .results-card .results-title {
         font-weight: 600;
-        font-size: 1.05rem;
+        font-size: 1.25rem;
         color: #1a6b54;
         margin-top: 0;
         margin-bottom: 0.75rem;
@@ -133,10 +138,10 @@ ui <- fluidPage(
         border-bottom: 2px solid #e8eef3;
       }
       .results-card li {
-        font-size: 0.93rem;
-        line-height: 1.6;
+        font-size: 1.05rem;
+        line-height: 1.65;
         color: #555;
-        padding: 0.3rem 0;
+        padding: 0.4rem 0;
         border-bottom: 1px solid #f0f0f0;
         list-style: none;
         padding-left: 0.2rem;
@@ -153,7 +158,7 @@ ui <- fluidPage(
       .app-footer {
         text-align: center;
         color: #777;
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         padding: 1rem 0 1.5rem 0;
       }
       .app-footer a {
@@ -209,7 +214,7 @@ ui <- fluidPage(
   # ---- Simulation ----
   sidebarLayout(
     sidebarPanel(width = 3,
-      tags$h4(style = "font-weight: 600; font-size: 1.05rem; color: #1a6b54;
+      tags$h4(style = "font-weight: 600; font-size: 1.25rem; color: #1a6b54;
                         margin-top: 0; margin-bottom: 0.75rem; padding-bottom: 0.5rem;
                         border-bottom: 2px solid #e8eef3;",
                "Parameters"),
@@ -339,22 +344,43 @@ server <- function(input, output) {
 
     all_durs    <- durs()
     extant_durs <- durs()[rels_obs()]
-    fixed_xlim  <- if (input$DistInput == "All equal")
-                     c(0, 2 * input$ExpectedDurationInput) else NULL
 
-    hist(all_durs, xlab = "Duration", ylab = "# Relationships",
-         main = "Distribution of All Relational Durations",
-         col = col_steelblue, border = "#ffffff",
-         col.main = col_teal, font.main = 2, cex.main = 1.1,
-         col.lab = "#555", col.axis = "#777",
-         xlim = fixed_xlim)
+    # Guard: if no extant ties, we can't histogram them
+    req(length(extant_durs) > 0)
 
-    hist(extant_durs, xlab = "Duration", ylab = "# Relationships",
-         main = "Distribution of Durations for Extant Relations on Observation Day",
-         col = "#2e7d9c", border = "#ffffff",
-         col.main = col_teal, font.main = 2, cex.main = 1.1,
-         col.lab = "#555", col.axis = "#777",
-         xlim = fixed_xlim)
+    # For "All equal", all values are identical so hist() needs explicit
+    # breaks and xlim to avoid a zero-width range error
+    if (input$DistInput == "All equal") {
+      eq_val <- input$ExpectedDurationInput
+      eq_xlim  <- c(0, 2 * eq_val)
+      eq_breaks <- seq(0, 2 * eq_val, length.out = 30)
+
+      hist(all_durs, xlab = "Duration", ylab = "# Relationships",
+           main = "Distribution of All Relational Durations",
+           col = col_steelblue, border = "#ffffff",
+           col.main = col_teal, font.main = 2, cex.main = 1.1,
+           col.lab = "#555", col.axis = "#777",
+           xlim = eq_xlim, breaks = eq_breaks)
+
+      hist(extant_durs, xlab = "Duration", ylab = "# Relationships",
+           main = "Distribution of Durations for Extant Relations on Observation Day",
+           col = "#2e7d9c", border = "#ffffff",
+           col.main = col_teal, font.main = 2, cex.main = 1.1,
+           col.lab = "#555", col.axis = "#777",
+           xlim = eq_xlim, breaks = eq_breaks)
+    } else {
+      hist(all_durs, xlab = "Duration", ylab = "# Relationships",
+           main = "Distribution of All Relational Durations",
+           col = col_steelblue, border = "#ffffff",
+           col.main = col_teal, font.main = 2, cex.main = 1.1,
+           col.lab = "#555", col.axis = "#777")
+
+      hist(extant_durs, xlab = "Duration", ylab = "# Relationships",
+           main = "Distribution of Durations for Extant Relations on Observation Day",
+           col = "#2e7d9c", border = "#ffffff",
+           col.main = col_teal, font.main = 2, cex.main = 1.1,
+           col.lab = "#555", col.axis = "#777")
+    }
   })
 }
 
