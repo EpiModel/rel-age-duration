@@ -1,56 +1,55 @@
 library(shiny)
-library(ggplot2)
 
 ui <- fluidPage(
   titlePanel(h3("Relational duration and the age of extant relationships"),
                 windowTitle = "Relational Duration and Age"),
   headerPanel(h5(
-                 h4(strong("Introduction:")), 
-    
+                 h4(strong("Introduction:")),
+
                  p("This app helps demonstrate the connections between",
-                   strong("relational duration"), "and", 
+                   strong("relational duration"), "and",
                    strong("relational age"),
-                   "for different distributions of 
+                   "for different distributions of
                     relational duration.", style = "margin-bottom: 12px"),
-                 
+
                  p("By relational duration, we mean the amount of time that a relationship
                     lasts before it ends.", style = "margin-bottom: 12px"),
-                 
+
                  p("By relational age, we mean how old an ongoing (a.k.a. extant)
-                    relationship is when it is observed at a specific time 
+                    relationship is when it is observed at a specific time
                     point.", style = "margin-bottom: 12px"),
-                 
-                 p("In particular, the app demonstrates the somewhat counter-intutive connections 
+
+                 p("In particular, the app demonstrates the somewhat counter-intutive connections
                     between the two when relationship durations follow a",
                    strong("memoryless"),
                    "distribution. Since the model here operates in discrete time,
-                    the relevant distribution is the", 
+                    the relevant distribution is the",
                    strong("geometric,"), "but the principle applies as well to
-                    continuous-time phenomena that follow the exponential distribution.", 
+                    continuous-time phenomena that follow the exponential distribution.",
                    style = "margin-bottom: 12px"),
-                 
-                 h4(strong("Instructions:")), 
-                 
+
+                 h4(strong("Instructions:")),
+
                  p("Select a time window size, expected relational duration,
-                   number of relations, and distribution for relational durations from 
+                   number of relations, and distribution for relational durations from
                    the options on the left. Observe the simulation in the plot on the right,
                    and read the resulting metrics below.", style = "margin-bottom: 12px"),
-                 
+
                  h4(strong("Details:")),
 
-                 p("The app simulates a user-specified number of relationships, 
-                    each beginning at a random time point across a time window of 
-                    user-specified width. Relationships have a user-specified mean duration, 
+                 p("The app simulates a user-specified number of relationships,
+                    each beginning at a random time point across a time window of
+                    user-specified width. Relationships have a user-specified mean duration,
                     with a distribution selected from a menu of
                     options. The app then selects an observation day randomly (although not
                     too close to the edges of the window, to avoid dealing with boundary
                     issues).", style = "margin-bottom: 12px"),
-                 
+
                  p("For all relationships existing on that day, the app calculates:"),
                  tags$ol(
                    tags$li("the", strong("mean duration for all relationships,"),
                            "regardless of whether they exist on the observation day"),
-                   tags$li("the", strong("mean relational age"), "on that day, 
+                   tags$li("the", strong("mean relational age"), "on that day,
                            i.e. time to the left of the observation day"),
                    tags$li("the", strong("mean time remaining"), "on that day,
                            i.e. time to the right of the observation day"),
@@ -121,15 +120,15 @@ server <- function(input, output) {
     str3 <- paste("We expect about ", exp_num_extant_ties(),
                     " relationships to exist on any given day. On our selected day, ",
                    length(rels_obs()), " relationships exist.", sep="")
-    str4 <- paste("Among the extant ties, the mean relational age on 
+    str4 <- paste("Among the extant ties, the mean relational age on
                   observation day is ", round(mean_age(),1),
-                  ", which is ", 100*round(mean_age()/meandur(),3), "% of the mean relational 
+                  ", which is ", 100*round(mean_age()/meandur(),3), "% of the mean relational
                   duration for all relationships of ",round(meandur(),1),".", sep="")
-    str5 <- paste("Among the extant ties, the mean time remaining until relational 
+    str5 <- paste("Among the extant ties, the mean time remaining until relational
                   termination (the right-censored part) is ", round(mean_time_remaining(),1),
-                  ", which is ", 100*round(mean_time_remaining()/meandur(),3), "% of the 
+                  ", which is ", 100*round(mean_time_remaining()/meandur(),3), "% of the
                   mean relational duration for all relationships of ",round(meandur(),1),".", sep="")
-    str6 <- paste("This means that the final mean duration of the relationships 
+    str6 <- paste("This means that the final mean duration of the relationships
                   existing on the observation day is ",
                 round(mean_age() + mean_time_remaining(),1), ", which is ",
                 100*round((mean_age()+mean_time_remaining())/meandur(),3),
@@ -143,16 +142,16 @@ server <- function(input, output) {
     output$durhist <- renderPlot({
       par(mfrow=c(2,1))
       ifelse(input$DistInput=="All equal",
-        hist(durs(), xlab="duration", ylab="# relationships", 
-             main = "Distribution of all relational durations", 
+        hist(durs(), xlab="duration", ylab="# relationships",
+             main = "Distribution of all relational durations",
              xlim=c(0,2*input$ExpectedDurationInput)),
         hist(durs(), xlab="duration", ylab="# relationships",
              main = "Distribution of all relational durations"))
       ifelse(input$DistInput=="All equal",
-        hist(durs()[rels_obs()], xlab="duration", ylab="# relationships", 
-             main = "Distribution of relational durations for relations extant on observation day", 
+        hist(durs()[rels_obs()], xlab="duration", ylab="# relationships",
+             main = "Distribution of relational durations for relations extant on observation day",
              xlim=c(0,2*input$ExpectedDurationInput)),
-        hist(durs()[rels_obs()], xlab="duration", ylab="# relationships", 
+        hist(durs()[rels_obs()], xlab="duration", ylab="# relationships",
              main = "Distribution of relational durations for relations extant on observation day"))
     })
 
