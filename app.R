@@ -161,6 +161,11 @@ ui <- fluidPage(
         font-size: 0.95rem;
         padding: 1rem 0 1.5rem 0;
       }
+      .app-footer .app-authors {
+        color: #555;
+        font-size: 1.0rem;
+        margin-bottom: 0.35rem;
+      }
       .app-footer a {
         color: #4682B4;
         text-decoration: none;
@@ -174,7 +179,7 @@ ui <- fluidPage(
 
   # ---- Header ----
   div(class = "app-header",
-    h2("Relational Duration and the Age of Extant Relationships"),
+    h2("Relational Duration and the Age of Active Relationships"),
     p("An interactive simulation from the EpiModel ecosystem")
   ),
 
@@ -204,7 +209,7 @@ ui <- fluidPage(
           tags$li("The", strong("mean duration"), "of all relationships"),
           tags$li("The", strong("mean relational age"), "(time since start)"),
           tags$li("The", strong("mean time remaining"), "(time until end)"),
-          tags$li("The", strong("mean duration of extant relationships"),
+          tags$li("The", strong("mean duration of active relationships"),
                   "(sum of age + time remaining)")
         )
       )
@@ -244,8 +249,14 @@ ui <- fluidPage(
 
   # ---- Footer ----
   div(class = "app-footer",
+    p(class = "app-authors",
+      "Developed by",
+      tags$a(href = "https://www.epimodel.org/team.html", "Steven M. Goodreau"),
+      "(University of Washington) and",
+      tags$a(href = "https://www.epimodel.org/team.html", "Samuel M. Jenness"),
+      "(Emory University)"),
     p("Part of the",
-      tags$a(href = "https://epimodel.org", "EpiModel"),
+      tags$a(href = "https://www.epimodel.org", "EpiModel"),
       "ecosystem \u2022 Powered by",
       tags$a(href = "https://posit-dev.github.io/r-shinylive/", "shinylive"))
   )
@@ -260,7 +271,7 @@ server <- function(input, output) {
   col_obs <- "#c0392b"
 
   ####### Generate the relationship start and end times #######
-  exp_num_extant_ties <- reactive({
+  exp_num_active_ties <- reactive({
     input$NumRelationsInput * input$ExpectedDurationInput / input$WindowSizeInput
   })
 
@@ -320,17 +331,17 @@ server <- function(input, output) {
               input$ExpectedDurationInput, round(meandur(), 1)),
       sprintf("Randomly selected observation day: %s (shown in red).",
               obs_day()),
-      sprintf("Expected extant ties: %s. Observed on this day: %s.",
-              round(exp_num_extant_ties(), 0), length(rels_obs())),
-      sprintf("Mean relational age of extant ties: %s (%s%% of mean duration %s).",
+      sprintf("Expected active ties: %s. Observed on this day: %s.",
+              round(exp_num_active_ties(), 0), length(rels_obs())),
+      sprintf("Mean relational age of active ties: %s (%s%% of mean duration %s).",
               round(mean_age(), 1),
               round(100 * mean_age() / meandur(), 1),
               round(meandur(), 1)),
-      sprintf("Mean time remaining for extant ties: %s (%s%% of mean duration %s).",
+      sprintf("Mean time remaining for active ties: %s (%s%% of mean duration %s).",
               round(mean_time_remaining(), 1),
               round(100 * mean_time_remaining() / meandur(), 1),
               round(meandur(), 1)),
-      sprintf("Mean duration of extant ties: %s (%s%% of overall mean duration %s).",
+      sprintf("Mean duration of active ties: %s (%s%% of overall mean duration %s).",
               round(mean_age() + mean_time_remaining(), 1),
               round(100 * (mean_age() + mean_time_remaining()) / meandur(), 1),
               round(meandur(), 1))
@@ -343,10 +354,10 @@ server <- function(input, output) {
     par(family = "sans", mfrow = c(2, 1), mar = c(4, 4, 3, 1), bg = "#ffffff")
 
     all_durs    <- durs()
-    extant_durs <- durs()[rels_obs()]
+    active_durs <- durs()[rels_obs()]
 
-    # Guard: if no extant ties, we can't histogram them
-    req(length(extant_durs) > 0)
+    # Guard: if no active ties, we can't histogram them
+    req(length(active_durs) > 0)
 
     # For "All equal", all values are identical so hist() needs explicit
     # breaks and xlim to avoid a zero-width range error
@@ -362,8 +373,8 @@ server <- function(input, output) {
            col.lab = "#555", col.axis = "#777",
            xlim = eq_xlim, breaks = eq_breaks)
 
-      hist(extant_durs, xlab = "Duration", ylab = "# Relationships",
-           main = "Distribution of Durations for Extant Relations on Observation Day",
+      hist(active_durs, xlab = "Duration", ylab = "# Relationships",
+           main = "Distribution of Durations for Active Relations on Observation Day",
            col = "#2e7d9c", border = "#ffffff",
            col.main = col_teal, font.main = 2, cex.main = 1.1,
            col.lab = "#555", col.axis = "#777",
@@ -375,8 +386,8 @@ server <- function(input, output) {
            col.main = col_teal, font.main = 2, cex.main = 1.1,
            col.lab = "#555", col.axis = "#777")
 
-      hist(extant_durs, xlab = "Duration", ylab = "# Relationships",
-           main = "Distribution of Durations for Extant Relations on Observation Day",
+      hist(active_durs, xlab = "Duration", ylab = "# Relationships",
+           main = "Distribution of Durations for Active Relations on Observation Day",
            col = "#2e7d9c", border = "#ffffff",
            col.main = col_teal, font.main = 2, cex.main = 1.1,
            col.lab = "#555", col.axis = "#777")
